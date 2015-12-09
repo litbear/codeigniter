@@ -39,8 +39,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * System Initialization File
+ * 系统初始化文件。
  *
  * Loads the base classes and executes the request.
+ * 加载基本类并执行请求
  *
  * @package		CodeIgniter
  * @subpackage	CodeIgniter
@@ -51,6 +53,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * CodeIgniter Version
+ * 当前版本号
  *
  * @var	string
  *
@@ -60,6 +63,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /*
  * ------------------------------------------------------
  *  Load the framework constants
+ *  加载框架常量
+ * 注意：这里配置文件可以按环境名为子文件夹组织
  * ------------------------------------------------------
  */
 	if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/constants.php'))
@@ -72,6 +77,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /*
  * ------------------------------------------------------
  *  Load the global functions
+ *  加载通用函数
  * ------------------------------------------------------
  */
 	require_once(BASEPATH.'core/Common.php');
@@ -80,6 +86,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /*
  * ------------------------------------------------------
  * Security procedures
+ * 安全流程
  * ------------------------------------------------------
  */
 
@@ -130,6 +137,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Define a custom error handler so we can log PHP errors
+ * 自定义错误与异常句柄，以记录PHP错误
  * ------------------------------------------------------
  */
 	set_error_handler('_error_handler');

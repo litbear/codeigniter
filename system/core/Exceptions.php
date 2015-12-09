@@ -130,6 +130,7 @@ class CI_Exceptions {
 		}
 
 		// By default we log this, but allow a dev to skip it
+                // 默认不做日志记录
 		if ($log_error)
 		{
 			log_message('error', $heading.': '.$page);
@@ -143,9 +144,11 @@ class CI_Exceptions {
 
 	/**
 	 * General Error Page
+         * 生成错误页面
 	 *
 	 * Takes an error message as input (either as a string or an array)
 	 * and displays it using the specified template.
+         * 将错误信息作为输出值，并使用指定模板显示之。
 	 *
 	 * @param	string		$heading	Page heading
 	 * @param	string|string[]	$message	Error message
@@ -162,6 +165,7 @@ class CI_Exceptions {
 			$templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
 		}
 
+                // 根据不同的客户端组织输出
 		if (is_cli())
 		{
 			$message = "\t".(is_array($message) ? implode("\n\t", $message) : $message);
@@ -174,6 +178,7 @@ class CI_Exceptions {
 			$template = 'html'.DIRECTORY_SEPARATOR.$template;
 		}
 
+                // 冲刷缓存区
 		if (ob_get_level() > $this->ob_level + 1)
 		{
 			ob_end_flush();

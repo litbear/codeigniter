@@ -4,11 +4,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace
+| 显示调试信息
 |--------------------------------------------------------------------------
 |
 | If set to TRUE, a backtrace will be displayed along with php errors. If
 | error_reporting is disabled, the backtrace will not display, regardless
 | of this setting
+| 假如设置为true，则会在显示php错误信息时显示相关回溯。假如关闭了错误报告，
+ * 则回溯信息也不会显示，取决于你的运行环境设置。
 |
 */
 defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
@@ -16,6 +19,7 @@ defined('SHOW_DEBUG_BACKTRACE') OR define('SHOW_DEBUG_BACKTRACE', TRUE);
 /*
 |--------------------------------------------------------------------------
 | File and Directory Modes
+| 文件与文件夹模式
 |--------------------------------------------------------------------------
 |
 | These prefs are used when checking and setting modes when working
@@ -34,9 +38,11 @@ defined('DIR_WRITE_MODE')  OR define('DIR_WRITE_MODE', 0755);
 /*
 |--------------------------------------------------------------------------
 | File Stream Modes
+| 文件流模式
 |--------------------------------------------------------------------------
 |
 | These modes are used when working with fopen()/popen()
+| 这些模式用于fopen()/popen()等方法
 |
 */
 defined('FOPEN_READ')                           OR define('FOPEN_READ', 'rb');
@@ -51,6 +57,7 @@ defined('FOPEN_READ_WRITE_CREATE_STRICT')       OR define('FOPEN_READ_WRITE_CREA
 /*
 |--------------------------------------------------------------------------
 | Exit Status Codes
+ * 推出状态信息
 |--------------------------------------------------------------------------
 |
 | Used to indicate the conditions under which the script is exit()ing.
@@ -63,6 +70,7 @@ defined('FOPEN_READ_WRITE_CREATE_STRICT')       OR define('FOPEN_READ_WRITE_CREA
 |
 | The three main conventions used for determining exit status codes
 | are as follows:
+| 三个用于指定推出状态的重要约定
 |
 |    Standard C/C++ Library (stdlibc):
 |       http://www.gnu.org/software/libc/manual/html_node/Exit-Status.html

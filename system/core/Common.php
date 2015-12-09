@@ -39,8 +39,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Common Functions
+ * 通用函数
  *
  * Loads the base classes and executes the request.
+ * 加载基本类并解析请求
  *
  * @package		CodeIgniter
  * @subpackage	CodeIgniter
@@ -55,6 +57,7 @@ if ( ! function_exists('is_php'))
 {
 	/**
 	 * Determines if the current version of PHP is equal to or greater than the supplied value
+         * 判断当前PHP版本号是否不小于要求的最小版本号
 	 *
 	 * @param	string
 	 * @return	bool	TRUE if the current version is $version or higher
@@ -79,10 +82,13 @@ if ( ! function_exists('is_really_writable'))
 {
 	/**
 	 * Tests for file writability
+         * 判断指定的文件或文件夹是否可写
 	 *
 	 * is_writable() returns TRUE on Windows servers when you really can't write to
 	 * the file, based on the read-only attribute. is_writable() is also unreliable
 	 * on Unix servers if safe_mode is on.
+         * 本函数在Windows系统中依据只读属性判断是否可写，同样，在Unix系统下PHP开启了安全模式
+         * 的情况下返回值不可靠。
 	 *
 	 * @link	https://bugs.php.net/bug.php?id=54709
 	 * @param	string
@@ -91,6 +97,7 @@ if ( ! function_exists('is_really_writable'))
 	function is_really_writable($file)
 	{
 		// If we're on a Unix server with safe_mode off we call is_writable
+                // 假如在类Unix操作系统下，且关闭了安全模式，则调用原生函数
 		if (DIRECTORY_SEPARATOR === '/' && (is_php('5.4') OR ! ini_get('safe_mode')))
 		{
 			return is_writable($file);
@@ -98,6 +105,7 @@ if ( ! function_exists('is_really_writable'))
 
 		/* For Windows servers and safe_mode "on" installations we'll actually
 		 * write a file then read it. Bah...
+                 * 如果是Windows系统或者开启了PHP安全模式的类Unix系统，则写一个文件试试看
 		 */
 		if (is_dir($file))
 		{
@@ -128,14 +136,20 @@ if ( ! function_exists('load_class'))
 {
 	/**
 	 * Class registry
+         * 注册类
 	 *
 	 * This function acts as a singleton. If the requested class does not
 	 * exist it is instantiated and set to a static variable. If it has
 	 * previously been instantiated the variable is returned.
+         * 本函数以单例运行，假如请求的类实例不存在，则实例化之并存入静态变量
+         * 缓存，假如之前实例化过了，则直接返回。
 	 *
 	 * @param	string	the class name being requested
+         * 字符串，请求的类名。
 	 * @param	string	the directory where the class should be found
+         * 字符串，类文件所在的文件夹
 	 * @param	string	an optional argument to pass to the class constructor
+         * 可选，传入构造方法的参数
 	 * @return	object
 	 */
 	function &load_class($class, $directory = 'libraries', $param = NULL)
@@ -143,6 +157,7 @@ if ( ! function_exists('load_class'))
 		static $_classes = array();
 
 		// Does the class exist? If so, we're done...
+                // 存在则直接返回
 		if (isset($_classes[$class]))
 		{
 			return $_classes[$class];
@@ -152,6 +167,7 @@ if ( ! function_exists('load_class'))
 
 		// Look for the class first in the local application/libraries folder
 		// then in the native system/libraries folder
+                // 先在应用的 application/libraries文件夹下找，再去system/libraries下找
 		foreach (array(APPPATH, BASEPATH) as $path)
 		{
 			if (file_exists($path.$directory.'/'.$class.'.php'))
@@ -168,6 +184,7 @@ if ( ! function_exists('load_class'))
 		}
 
 		// Is the request a class extension? If so we load it too
+                // 如果存在扩展类 则引入
 		if (file_exists(APPPATH.$directory.'/'.config_item('subclass_prefix').$class.'.php'))
 		{
 			$name = config_item('subclass_prefix').$class;
@@ -179,6 +196,7 @@ if ( ! function_exists('load_class'))
 		}
 
 		// Did we find the class?
+                // 还没找到就报错
 		if ($name === FALSE)
 		{
 			// Note: We use exit() rather than show_error() in order to avoid a
@@ -189,6 +207,7 @@ if ( ! function_exists('load_class'))
 		}
 
 		// Keep track of what we just loaded
+                // 跟踪更改实例化的类
 		is_loaded($class);
 
 		$_classes[$class] = isset($param)
@@ -205,6 +224,7 @@ if ( ! function_exists('is_loaded'))
 	/**
 	 * Keeps track of which libraries have been loaded. This function is
 	 * called by the load_class() function above
+         * 保持对已经加载的类库进行跟踪，本方法由load_class()方法调用
 	 *
 	 * @param	string
 	 * @return	array
@@ -228,9 +248,11 @@ if ( ! function_exists('get_config'))
 {
 	/**
 	 * Loads the main config.php file
+         * 加载主配置文件
 	 *
 	 * This function lets us grab the config file even if the Config class
 	 * hasn't been instantiated yet
+         * 本方法让我们在配置类未实例化的时候引入配置文件
 	 *
 	 * @param	array
 	 * @return	array
@@ -250,6 +272,7 @@ if ( ! function_exists('get_config'))
 			}
 
 			// Is the config file in the environment folder?
+                        // 根据不同环境引入相应的配置文件
 			if (file_exists($file_path = APPPATH.'config/'.ENVIRONMENT.'/config.php'))
 			{
 				require($file_path);
@@ -271,6 +294,7 @@ if ( ! function_exists('get_config'))
 		}
 
 		// Are any values being dynamically added or replaced?
+                // 使用动态传入的配置覆盖原有配置
 		foreach ($replace as $key => $val)
 		{
 			$config[$key] = $val;
@@ -286,6 +310,7 @@ if ( ! function_exists('config_item'))
 {
 	/**
 	 * Returns the specified config item
+         * 返回指定配置项
 	 *
 	 * @param	string
 	 * @return	mixed
@@ -297,6 +322,8 @@ if ( ! function_exists('config_item'))
 		if (empty($_config))
 		{
 			// references cannot be directly assigned to static variables, so we use an array
+                        // 在这里引用传递，对接收的值进行更改会影响原有值。
+                        // 另外注释讲，引用不能直接传给静态变量，所以我们使用字符串（好诡异的解决方法）
 			$_config[0] =& get_config();
 		}
 
@@ -310,6 +337,7 @@ if ( ! function_exists('get_mimes'))
 {
 	/**
 	 * Returns the MIME types array from config/mimes.php
+         * 返回config/mimes.php 文件中的MIME格式数组
 	 *
 	 * @return	array
 	 */
@@ -319,6 +347,7 @@ if ( ! function_exists('get_mimes'))
 
 		if (empty($_mimes))
 		{
+                        // 指定环境优先
 			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/mimes.php'))
 			{
 				$_mimes = include(APPPATH.'config/'.ENVIRONMENT.'/mimes.php');
@@ -346,6 +375,7 @@ if ( ! function_exists('is_https'))
 	 *
 	 * Determines if the application is accessed via an encrypted
 	 * (HTTPS) connection.
+         * 判断当前应用是否是https方式访问的（跟HTTP协议相关的函数）
 	 *
 	 * @return	bool
 	 */
@@ -377,6 +407,7 @@ if ( ! function_exists('is_cli'))
 	 * Is CLI?
 	 *
 	 * Test to see if a request was made from the command line.
+         * 判断程序是否是由命令行访问的
 	 *
 	 * @return 	bool
 	 */
@@ -392,12 +423,15 @@ if ( ! function_exists('show_error'))
 {
 	/**
 	 * Error Handler
+         * 错误句柄
 	 *
 	 * This function lets us invoke the exception class and
 	 * display errors using the standard error template located
 	 * in application/views/errors/error_general.php
 	 * This function will send the error page directly to the
 	 * browser and exit.
+         * 本方法让我们调用异常类并使用位于application/views/errors/error_general.php
+         * 的标准错误模板显示错误。本方法会直接向浏览器发送错误页面并退出。
 	 *
 	 * @param	string
 	 * @param	int
@@ -407,6 +441,7 @@ if ( ! function_exists('show_error'))
 	function show_error($message, $status_code = 500, $heading = 'An Error Was Encountered')
 	{
 		$status_code = abs($status_code);
+                // 处理错误码
 		if ($status_code < 100)
 		{
 			$exit_status = $status_code + 9; // 9 is EXIT__AUTO_MIN
@@ -422,7 +457,9 @@ if ( ! function_exists('show_error'))
 			$exit_status = 1; // EXIT_ERROR
 		}
 
+                // 实例化错误处理类
 		$_error =& load_class('Exceptions', 'core');
+                // 显示错误信息
 		echo $_error->show_error($heading, $message, 'error_general', $status_code);
 		exit($exit_status);
 	}
@@ -434,10 +471,12 @@ if ( ! function_exists('show_404'))
 {
 	/**
 	 * 404 Page Handler
+         * 404页面句柄
 	 *
 	 * This function is similar to the show_error() function above
 	 * However, instead of the standard error template it displays
 	 * 404 errors.
+         * 本方法与show_error()方法相似，不同的是使用了404错误模板
 	 *
 	 * @param	string
 	 * @param	bool
@@ -457,9 +496,11 @@ if ( ! function_exists('log_message'))
 {
 	/**
 	 * Error Logging Interface
+         * 错误日志接口
 	 *
 	 * We use this as a simple mechanism to access the logging
 	 * class and send messages to be logged.
+         * 我们使用这种简单的机制去访问日志类并传递日志信息
 	 *
 	 * @param	string	the error level: 'error', 'debug' or 'info'
 	 * @param	string	the error message
@@ -485,6 +526,7 @@ if ( ! function_exists('set_status_header'))
 {
 	/**
 	 * Set HTTP Status Header
+         * 设置HTTP响应状态码
 	 *
 	 * @param	int	the status code
 	 * @param	string
@@ -581,6 +623,7 @@ if ( ! function_exists('_error_handler'))
 {
 	/**
 	 * Error Handler
+         * 错误句柄
 	 *
 	 * This is the custom error handler that is declared at the (relative)
 	 * top of CodeIgniter.php. The main reason we use this is to permit
@@ -589,6 +632,11 @@ if ( ! function_exists('_error_handler'))
 	 * intercepts PHP errors, however, we also need to display errors
 	 * based on the current error_reporting level.
 	 * We do that with the use of a PHP error template.
+         * 这是在 CodeIgniter.php文件最前面定义的个性化错误句柄。使用本方法的
+         * 主要原因就是，确保PHP错误信息能够记录到我们自己的错误日志中，因为
+         * 用户可能自己访问不到服务器的日志。本方法有效地截断了PHP错误，然而
+         * 我们仍让需要根据当前的报错级别显示错误，显示错误时我们使用PHP错误模板。
+         * 
 	 *
 	 * @param	int	$severity
 	 * @param	string	$message
@@ -606,6 +654,9 @@ if ( ! function_exists('_error_handler'))
 		// it is only called when the display_errors flag is set (which isn't usually
 		// the case in a production environment) or when errors are ignored because
 		// they are above the error_reporting threshold.
+                // 当发错误的时候，向客户端发送500状态码。这件事不能在$_error->show_php_error()
+                // 方法中完成，因为$_error->show_php_error()方法只在display_errors为真的时候才
+                // 能够执行
 		if ($is_error)
 		{
 			set_status_header(500);
@@ -622,6 +673,7 @@ if ( ! function_exists('_error_handler'))
 		$_error->log_exception($severity, $message, $filepath, $line);
 
 		// Should we display the error?
+                // 判断是否该显示错误
 		if (str_ireplace(array('off', 'none', 'no', 'false', 'null'), '', ini_get('display_errors')))
 		{
 			$_error->show_php_error($severity, $message, $filepath, $line);
@@ -630,6 +682,7 @@ if ( ! function_exists('_error_handler'))
 		// If the error is fatal, the execution of the script should be stopped because
 		// errors can't be recovered from. Halting the script conforms with PHP's
 		// default error handling. See http://www.php.net/manual/en/errorfunc.constants.php
+                // 假如错误是致命的 则退出，使用php原生错误句柄处理
 		if ($is_error)
 		{
 			exit(1); // EXIT_ERROR
@@ -643,10 +696,12 @@ if ( ! function_exists('_exception_handler'))
 {
 	/**
 	 * Exception Handler
+         * 异常句柄
 	 *
 	 * Sends uncaught exceptions to the logger and displays them
 	 * only if display_errors is On so that they don't show up in
 	 * production environments.
+         * 在允许显示的情况下，向客户端发送未捕获的异常。
 	 *
 	 * @param	Exception	$exception
 	 * @return	void
@@ -657,6 +712,7 @@ if ( ! function_exists('_exception_handler'))
 		$_error->log_exception('error', 'Exception: '.$exception->getMessage(), $exception->getFile(), $exception->getLine());
 
 		// Should we display the error?
+                // 如果是array('off', 'none', 'no', 'false', 'null')里面的值，则会返回空字符串，近似于false
 		if (str_ireplace(array('off', 'none', 'no', 'false', 'null'), '', ini_get('display_errors')))
 		{
 			$_error->show_exception($exception);
@@ -672,6 +728,7 @@ if ( ! function_exists('_shutdown_handler'))
 {
 	/**
 	 * Shutdown Handler
+         * 停止程序句柄
 	 *
 	 * This is the shutdown handler that is declared at the top
 	 * of CodeIgniter.php. The main reason we use this is to simulate
@@ -700,9 +757,11 @@ if ( ! function_exists('remove_invisible_characters'))
 {
 	/**
 	 * Remove Invisible Characters
+         * 删除不可见的字符
 	 *
 	 * This prevents sandwiching null characters
 	 * between ascii characters, like Java\0script.
+         * 本方法组织ascii字符中夹杂空字符
 	 *
 	 * @param	string
 	 * @param	bool
@@ -770,9 +829,11 @@ if ( ! function_exists('_stringify_attributes'))
 {
 	/**
 	 * Stringify attributes for use in HTML tags.
+         * 为HTML标签字符串化属性。
 	 *
 	 * Helper function used to convert a string, array, or object
 	 * of attributes to a string.
+         * 将数组字符串或者对象属性转换为字符串的帮助函数
 	 *
 	 * @param	mixed	string, array, object
 	 * @param	bool
@@ -796,6 +857,7 @@ if ( ! function_exists('_stringify_attributes'))
 
 		foreach ($attributes as $key => $val)
 		{
+                        // 如果是js键值对，值要加双引号
 			$atts .= ($js) ? $key.'='.$val.',' : ' '.$key.'="'.$val.'"';
 		}
 
@@ -809,16 +871,23 @@ if ( ! function_exists('function_usable'))
 {
 	/**
 	 * Function usable
+         * 函数是否可用
 	 *
 	 * Executes a function_exists() check, and if the Suhosin PHP
 	 * extension is loaded - checks whether the function that is
 	 * checked might be disabled in there as well.
+         * 执行function_exists()检验，如果启用了Suhosin扩展，则检测函
+         * 数是否被禁用
 	 *
 	 * This is useful as function_exists() will return FALSE for
 	 * functions disabled via the *disable_functions* php.ini
 	 * setting, but not for *suhosin.executor.func.blacklist* and
 	 * *suhosin.executor.disable_eval*. These settings will just
 	 * terminate script execution if a disabled function is executed.
+         * 本方法弥补了function_exists() 方法只会对*disable_functions*参数
+         * 设置的函数返回false的缺陷，同样会对当*suhosin.executor.func.blacklist* 和
+	 * *suhosin.executor.disable_eval*参数禁用的函数返回false。
+         * 禁用的函数被调用的时候，本方法会终止函数执行。
 	 *
 	 * The above described behavior turned out to be a bug in Suhosin,
 	 * but even though a fix was commited for 0.9.34 on 2012-02-12,
