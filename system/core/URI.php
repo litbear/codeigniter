@@ -75,8 +75,10 @@ class CI_URI {
 
 	/**
 	 * List of routed URI segments
+         * URI分段数
 	 *
 	 * Starts at 1 instead of 0.
+         * 从1开始
 	 *
 	 * @var	array
 	 */

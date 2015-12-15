@@ -147,6 +147,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Set the subclass_prefix
+ *  设置子类前缀
  * ------------------------------------------------------
  *
  * Normally the "subclass_prefix" is set in the config file.
@@ -159,6 +160,12 @@ if ( ! is_php('5.4'))
  * before any classes are loaded
  * Note: Since the config file data is cached it doesn't
  * hurt to load it here.
+ * 通常，子类前缀在配置文件中设置，本属性允许CI框架知道核心
+ * 类是否在应用文件夹下的libraries文件夹下被继承。由于CI框架
+ * 允许配置文件中的配置项被index.php中定义的值所覆盖。所以，
+ * 在进行更多操作之前我们需要知道覆盖子类前缀的变量是否被设置
+ * 。假如设置了，我们将会先把覆盖的变量写到全局配置变量中。
+ * 注意：由于配置文件信息被缓存了，配置项将被覆盖
  */
 	if ( ! empty($assign_to_config['subclass_prefix']))
 	{
@@ -168,6 +175,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Should we use a Composer autoloader?
+ *  是否使用Composer的自动加载方法
  * ------------------------------------------------------
  */
 	if ($composer_autoload = config_item('composer_autoload'))
@@ -191,6 +199,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Start the timer... tick tock tick tock...
+ * 实例化性能监视类
  * ------------------------------------------------------
  */
 	$BM =& load_class('Benchmark', 'core');
@@ -200,6 +209,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the hooks class
+ *  实例化钩子类
  * ------------------------------------------------------
  */
 	$EXT =& load_class('Hooks', 'core');
@@ -207,6 +217,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Is there a "pre_system" hook?
+ *  调用系统执行前 "pre_system" 钩子
  * ------------------------------------------------------
  */
 	$EXT->call_hook('pre_system');
@@ -214,16 +225,20 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the config class
+ *  实例化配置类
  * ------------------------------------------------------
  *
  * Note: It is important that Config is loaded first as
  * most other classes depend on it either directly or by
  * depending on another class that uses it.
+ * 注意，配置累必须首先加载，因为大多数的其他类都直接或间接地
+ * 依赖它。
  *
  */
 	$CFG =& load_class('Config', 'core');
 
 	// Do we have any manually set config items in the index.php file?
+        // 再把本文件之前定义的配置覆盖到配置文件的值中
 	if (isset($assign_to_config) && is_array($assign_to_config))
 	{
 		foreach ($assign_to_config as $key => $value)
@@ -235,15 +250,21 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  * Important charset-related stuff
+ * 字符集相关处理
  * ------------------------------------------------------
  *
  * Configure mbstring and/or iconv if they are enabled
  * and set MB_ENABLED and ICONV_ENABLED constants, so
  * that we don't repeatedly do extension_loaded() or
  * function_exists() calls.
+ * 假如开启了MB_ENABLED和ICONV_ENABLED常量，配置mbstring 
+ * 和 iconv。因此我们可以补习屡次调用extension_loaded()和
+ * function_exists()方法
  *
  * Note: UTF-8 class depends on this. It used to be done
  * in it's constructor, but it's _not_ class-specific.
+ * 注意：UTF-8类依赖本段代码。本段代码用于UTF8类的构造器，
+ * 但并不是其类的属性
  *
  */
 	$charset = strtoupper(config_item('charset'));
@@ -253,10 +274,14 @@ if ( ! is_php('5.4'))
 	{
 		define('MB_ENABLED', TRUE);
 		// mbstring.internal_encoding is deprecated starting with PHP 5.6
+                // mbstring.internal_encoding 从PHP5.6开始被弃用
 		// and it's usage triggers E_DEPRECATED messages.
+                // 调用它会引起E_DEPRECATED异常
 		@ini_set('mbstring.internal_encoding', $charset);
 		// This is required for mb_convert_encoding() to strip invalid characters.
 		// That's utilized by CI_Utf8, but it's also done for consistency with iconv.
+                // 这是用于mb_convert_encoding()方法去除无效字符的。本设置被用于CI_Utf8类，
+                // 但是同样为iconv保持一致性
 		mb_substitute_character('none');
 	}
 	else
@@ -266,11 +291,13 @@ if ( ! is_php('5.4'))
 
 	// There's an ICONV_IMPL constant, but the PHP manual says that using
 	// iconv's predefined constants is "strongly discouraged".
+        // ICONV_IMPL常量，PHP手册上说是用于iconv的预定义变量。 "strongly discouraged"
 	if (extension_loaded('iconv'))
 	{
 		define('ICONV_ENABLED', TRUE);
 		// iconv.internal_encoding is deprecated starting with PHP 5.6
 		// and it's usage triggers E_DEPRECATED messages.
+                // iconv.internal_encoding从5.6开始弃用，使用它会触发E_DEPRECATED异常
 		@ini_set('iconv.internal_encoding', $charset);
 	}
 	else
@@ -286,6 +313,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Load compatibility features
+ *  加载兼容性特性相关代码
  * ------------------------------------------------------
  */
 
@@ -297,6 +325,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the UTF-8 class
+ *  实例化UTF8类
  * ------------------------------------------------------
  */
 	$UNI =& load_class('Utf8', 'core');
@@ -304,6 +333,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the URI class
+ *  实例化URI类
  * ------------------------------------------------------
  */
 	$URI =& load_class('URI', 'core');
@@ -311,6 +341,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the routing class and set the routing
+ *  实例化路由类 并设置路由
  * ------------------------------------------------------
  */
 	$RTR =& load_class('Router', 'core', isset($routing) ? $routing : NULL);
@@ -318,6 +349,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Instantiate the output class
+ *  实例化输出类
  * ------------------------------------------------------
  */
 	$OUT =& load_class('Output', 'core');
@@ -325,6 +357,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *	Is there a valid cache file? If so, we're done...
+ *      是否存在有效的缓存文件
  * ------------------------------------------------------
  */
 	if ($EXT->call_hook('cache_override') === FALSE && $OUT->_display_cache($CFG, $URI) === TRUE)
@@ -335,6 +368,7 @@ if ( ! is_php('5.4'))
 /*
  * -----------------------------------------------------
  * Load the security class for xss and csrf support
+ * 加载安全类，防止 xss 和 csrf 攻击
  * -----------------------------------------------------
  */
 	$SEC =& load_class('Security', 'core');
@@ -342,6 +376,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Load the Input class and sanitize globals
+ *  加载输入类，并进行合法性过滤
  * ------------------------------------------------------
  */
 	$IN	=& load_class('Input', 'core');
@@ -349,6 +384,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Load the Language class
+ *  加载语言类
  * ------------------------------------------------------
  */
 	$LANG =& load_class('Lang', 'core');
@@ -356,16 +392,20 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Load the app controller and local controller
+ *  加载应用控制器和本地控制器
  * ------------------------------------------------------
  *
  */
 	// Load the base controller class
+        // 加载控制器类
 	require_once BASEPATH.'core/Controller.php';
 
 	/**
 	 * Reference to the CI_Controller method.
+         * 引用CI_Controller方法
 	 *
 	 * Returns current CI instance object
+         * 返回CI_Controller实例
 	 *
 	 * @return object
 	 */
@@ -380,33 +420,42 @@ if ( ! is_php('5.4'))
 	}
 
 	// Set a mark point for benchmarking
+        // 设置基准测试点
 	$BM->mark('loading_time:_base_classes_end');
 
 /*
  * ------------------------------------------------------
  *  Sanity checks
+ *  完备性检查
  * ------------------------------------------------------
  *
  *  The Router class has already validated the request,
  *  leaving us with 3 options here:
+ *  路由类已经对请求进行了合法性检查，为我们留下了3个选项：
  *
  *	1) an empty class name, if we reached the default
  *	   controller, but it didn't exist;
+ *      1) 一个空的类名，假如访问默认控制器，但控制器不存在
  *	2) a query string which doesn't go through a
  *	   file_exists() check
+ *      2）不能通过file_exists()方法检查的查询字符串。
  *	3) a regular request for a non-existing page
+ *      3）对不存在页面的符合规则的请求
  *
  *  We handle all of these as a 404 error.
+ *  所有这些都会交给404错误去处理
  *
  *  Furthermore, none of the methods in the app controller
  *  or the loader class can be called via the URI, nor can
  *  controller methods that begin with an underscore.
+ *  此外，任何一个以下划线开头的控制器的方法和被加载的类都不能用过ERI类调用
  */
 
 	$e404 = FALSE;
 	$class = ucfirst($RTR->class);
 	$method = $RTR->method;
 
+        // 类名为空或者类文件找不到，404
 	if (empty($class) OR ! file_exists(APPPATH.'controllers/'.$RTR->directory.$class.'.php'))
 	{
 		$e404 = TRUE;
@@ -415,10 +464,13 @@ if ( ! is_php('5.4'))
 	{
 		require_once(APPPATH.'controllers/'.$RTR->directory.$class.'.php');
 
+                // 引入了文件，但是类不存在，或者方法以下划线开头，或者指定方法不存在。同样404
 		if ( ! class_exists($class, FALSE) OR $method[0] === '_' OR method_exists('CI_Controller', $method))
 		{
 			$e404 = TRUE;
 		}
+                // 其余情况，首先要看指定的控制器类是否定义了_remap方法
+                // _remap即为重映射方法
 		elseif (method_exists($class, '_remap'))
 		{
 			$params = array($method, array_slice($URI->rsegments, 2));
@@ -428,12 +480,15 @@ if ( ! is_php('5.4'))
 		// Furthermore, there are bug reports and feature/change requests related to it
 		// that make it unreliable to use in this context. Please, DO NOT change this
 		// work-around until a better alternative is available.
+                // 警告：似乎在PHP 5.2版本内is_callable()方法有问题。
+                // 看看调用的方法在指定的控制器类内是否存在
 		elseif ( ! in_array(strtolower($method), array_map('strtolower', get_class_methods($class)), TRUE))
 		{
 			$e404 = TRUE;
 		}
 	}
 
+        // 进行404处理
 	if ($e404)
 	{
 		if ( ! empty($RTR->routes['404_override']))
@@ -544,6 +599,7 @@ if ( ! is_php('5.4'))
 /*
  * ------------------------------------------------------
  *  Is there a "post_system" hook?
+ *  执行post_system钩子
  * ------------------------------------------------------
  */
 	$EXT->call_hook('post_system');

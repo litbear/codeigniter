@@ -39,8 +39,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Hooks Class
+ * 钩子类
  *
  * Provides a mechanism to extend the base system without hacking.
+ * 提供一个不修改源代码而扩展系统功能的机制
  *
  * @package		CodeIgniter
  * @subpackage	Libraries
@@ -52,6 +54,7 @@ class CI_Hooks {
 
 	/**
 	 * Determines whether hooks are enabled
+         * 判断钩子机制是否启动
 	 *
 	 * @var	bool
 	 */
@@ -59,6 +62,7 @@ class CI_Hooks {
 
 	/**
 	 * List of all hooks set in config/hooks.php
+         * 列出所有配置文件中设置的钩子
 	 *
 	 * @var	array
 	 */
@@ -66,6 +70,7 @@ class CI_Hooks {
 
 	/**
 	 * Array with class objects to use hooks methods
+         * 用于实现钩子方法的对象组成的数组
 	 *
 	 * @var array
 	 */
@@ -73,8 +78,10 @@ class CI_Hooks {
 
 	/**
 	 * In progress flag
+         * 执行标记
 	 *
 	 * Determines whether hook is in progress, used to prevent infinte loops
+         * 判断钩子是否在执行，用于防止死循环
 	 *
 	 * @var	bool
 	 */
@@ -82,38 +89,45 @@ class CI_Hooks {
 
 	/**
 	 * Class constructor
+         * 构造器
 	 *
 	 * @return	void
 	 */
 	public function __construct()
 	{
+                // 获取配置类 写日志
 		$CFG =& load_class('Config', 'core');
 		log_message('info', 'Hooks Class Initialized');
 
 		// If hooks are not enabled in the config file
 		// there is nothing else to do
+                // 假如钩子没有启用，则什么也不做
 		if ($CFG->item('enable_hooks') === FALSE)
 		{
 			return;
 		}
 
 		// Grab the "hooks" definition file.
+                // 取得钩子的相关配置
 		if (file_exists(APPPATH.'config/hooks.php'))
 		{
 			include(APPPATH.'config/hooks.php');
 		}
 
+                // 取得指定环境的配置
 		if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/hooks.php'))
 		{
 			include(APPPATH.'config/'.ENVIRONMENT.'/hooks.php');
 		}
 
 		// If there are no hooks, we're done.
+                // 假如开启了钩子，配置却是空的，则什么也不做
 		if ( ! isset($hook) OR ! is_array($hook))
 		{
 			return;
 		}
 
+                // 配置项分配给属性
 		$this->hooks =& $hook;
 		$this->enabled = TRUE;
 	}
@@ -122,8 +136,10 @@ class CI_Hooks {
 
 	/**
 	 * Call Hook
+         * 调用钩子
 	 *
 	 * Calls a particular hook. Called by CodeIgniter.php.
+         * 由 CodeIgniter.php文件调用特殊钩子。
 	 *
 	 * @uses	CI_Hooks::_run_hook()
 	 *
@@ -132,11 +148,13 @@ class CI_Hooks {
 	 */
 	public function call_hook($which = '')
 	{
+                // 开启了钩子，且有相容的配置项，才能进行下一步
 		if ( ! $this->enabled OR ! isset($this->hooks[$which]))
 		{
 			return FALSE;
 		}
 
+                // 如果配置项是数组，且配置项没设置function属性，则执行$this->_run_hook($val);
 		if (is_array($this->hooks[$which]) && ! isset($this->hooks[$which]['function']))
 		{
 			foreach ($this->hooks[$which] as $val)
@@ -144,6 +162,7 @@ class CI_Hooks {
 				$this->_run_hook($val);
 			}
 		}
+                // 反之，不是数组形式，则执行$this->_run_hook($this->hooks[$which])
 		else
 		{
 			$this->_run_hook($this->hooks[$which]);
@@ -158,6 +177,7 @@ class CI_Hooks {
 	 * Run Hook
 	 *
 	 * Runs a particular hook
+         * 运行指定钩子，内部调用
 	 *
 	 * @param	array	$data	Hook details
 	 * @return	bool	TRUE on success or FALSE on failure
@@ -165,6 +185,7 @@ class CI_Hooks {
 	protected function _run_hook($data)
 	{
 		// Closures/lambda functions and array($object, 'method') callables
+                // 闭包或匿名函数，或array($object, 'method')形式的回调函数
 		if (is_callable($data))
 		{
 			is_array($data)
@@ -173,6 +194,7 @@ class CI_Hooks {
 
 			return TRUE;
 		}
+                // 否则，返回假
 		elseif ( ! is_array($data))
 		{
 			return FALSE;
@@ -180,10 +202,12 @@ class CI_Hooks {
 
 		// -----------------------------------
 		// Safety - Prevents run-away loops
+                // 安全措施：防止循环失控
 		// -----------------------------------
 
 		// If the script being called happens to have the same
 		// hook call within it a loop can happen
+                // 假如代码被调用时，碰巧又同样的钩子，则处理之【没看懂】
 		if ($this->_in_progress === TRUE)
 		{
 			return;
@@ -191,6 +215,7 @@ class CI_Hooks {
 
 		// -----------------------------------
 		// Set file path
+                // 设置文件路径
 		// -----------------------------------
 
 		if ( ! isset($data['filepath'], $data['filename']))
@@ -206,6 +231,7 @@ class CI_Hooks {
 		}
 
 		// Determine and class and/or function names
+                // 判断类名和方法名
 		$class		= empty($data['class']) ? FALSE : $data['class'];
 		$function	= empty($data['function']) ? FALSE : $data['function'];
 		$params		= isset($data['params']) ? $data['params'] : '';
@@ -216,6 +242,7 @@ class CI_Hooks {
 		}
 
 		// Set the _in_progress flag
+                // 设置执行标记
 		$this->_in_progress = TRUE;
 
 		// Call the requested class and/or function

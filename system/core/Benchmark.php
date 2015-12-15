@@ -39,9 +39,11 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Benchmark Class
+ * 基准性能测试鳄梨
  *
  * This class enables you to mark points and calculate the time difference
  * between them. Memory consumption can also be displayed.
+ * 本类可以计算程序运行时间，和内存消耗
  *
  * @package		CodeIgniter
  * @subpackage	Libraries

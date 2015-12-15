@@ -83,9 +83,11 @@ class CI_Config {
 	 */
 	public function __construct()
 	{
+                // 使用配置文件里的值先初始化
 		$this->config =& get_config();
 
 		// Set the base_url automatically if none was provided
+                // 设置基本url
 		if (empty($this->config['base_url']))
 		{
 			if (isset($_SERVER['SERVER_ADDR']))
